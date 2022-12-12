@@ -1,0 +1,148 @@
+{
+    "name": "GCS_To_BQ",
+    "description": "Data Pipeline Application",
+    "artifact": {
+        "name": "cdap-data-pipeline",
+        "version": "6.7.2",
+        "scope": "SYSTEM"
+    },
+    "config": {
+        "stages": [
+            {
+                "name": "GCS",
+                "plugin": {
+                    "name": "GCSFile",
+                    "type": "batchsource",
+                    "label": "GCS",
+                    "artifact": {
+                        "name": "google-cloud",
+                        "version": "0.20.3",
+                        "scope": "SYSTEM"
+                    },
+                    "properties": {
+                        "useConnection": "false",
+                        "project": "auto-detect",
+                        "serviceAccountType": "filePath",
+                        "serviceFilePath": "auto-detect",
+                        "referenceName": "GCSInput",
+                        "path": "gs://rkc-data-fusion-poc-9der/electronic-card-transactions-october-2022-csv-tables.csv",
+                        "format": "csv",
+                        "sampleSize": "1000",
+                        "filenameOnly": "false",
+                        "recursive": "false",
+                        "ignoreNonExistingFolders": "false",
+                        "encrypted": "false",
+                        "fileEncoding": "UTF-8",
+                        "schema": "{\"type\":\"record\",\"name\":\"etlSchemaBody\",\"fields\":[{\"name\":\"Series_reference\",\"type\":\"string\"},{\"name\":\"Period\",\"type\":\"double\"},{\"name\":\"Data_value\",\"type\":[\"double\",\"null\"]},{\"name\":\"Suppressed\",\"type\":[\"string\",\"null\"]},{\"name\":\"STATUS\",\"type\":\"string\"},{\"name\":\"UNITS\",\"type\":\"string\"},{\"name\":\"Magnitude\",\"type\":\"int\"},{\"name\":\"Subject\",\"type\":\"string\"},{\"name\":\"Group\",\"type\":\"string\"},{\"name\":\"Series_title_1\",\"type\":\"string\"},{\"name\":\"Series_title_2\",\"type\":\"string\"},{\"name\":\"Series_title_3\",\"type\":[\"string\",\"null\"]},{\"name\":\"Series_title_4\",\"type\":[\"string\",\"null\"]},{\"name\":\"Series_title_5\",\"type\":[\"string\",\"null\"]}]}",
+                        "enableQuotedValues": "false",
+                        "skipHeader": "true"
+                    }
+                },
+                "outputSchema": "{\"type\":\"record\",\"name\":\"etlSchemaBody\",\"fields\":[{\"name\":\"Series_reference\",\"type\":\"string\"},{\"name\":\"Period\",\"type\":\"double\"},{\"name\":\"Data_value\",\"type\":[\"double\",\"null\"]},{\"name\":\"Suppressed\",\"type\":[\"string\",\"null\"]},{\"name\":\"STATUS\",\"type\":\"string\"},{\"name\":\"UNITS\",\"type\":\"string\"},{\"name\":\"Magnitude\",\"type\":\"int\"},{\"name\":\"Subject\",\"type\":\"string\"},{\"name\":\"Group\",\"type\":\"string\"},{\"name\":\"Series_title_1\",\"type\":\"string\"},{\"name\":\"Series_title_2\",\"type\":\"string\"},{\"name\":\"Series_title_3\",\"type\":[\"string\",\"null\"]},{\"name\":\"Series_title_4\",\"type\":[\"string\",\"null\"]},{\"name\":\"Series_title_5\",\"type\":[\"string\",\"null\"]}]}",
+                "id": "GCS",
+                "type": "batchsource",
+                "label": "GCS",
+                "icon": "fa-plug",
+                "$$hashKey": "object:38",
+                "isPluginAvailable": true,
+                "_uiPosition": {
+                    "left": "710px",
+                    "top": "365.5px"
+                }
+            },
+            {
+                "name": "BigQuery",
+                "plugin": {
+                    "name": "BigQueryTable",
+                    "type": "batchsink",
+                    "label": "BigQuery",
+                    "artifact": {
+                        "name": "google-cloud",
+                        "version": "0.20.3",
+                        "scope": "SYSTEM"
+                    },
+                    "properties": {
+                        "useConnection": "false",
+                        "project": "auto-detect",
+                        "serviceAccountType": "filePath",
+                        "serviceFilePath": "auto-detect",
+                        "referenceName": "BQOutput",
+                        "dataset": "data_fusion_out",
+                        "table": "Data_Fusion_Out_Table",
+                        "operation": "insert",
+                        "truncateTable": "false",
+                        "allowSchemaRelaxation": "false",
+                        "location": "US",
+                        "createPartitionedTable": "false",
+                        "partitioningType": "TIME",
+                        "partitionFilterRequired": "false",
+                        "schema": "{\"type\":\"record\",\"name\":\"etlSchemaBody\",\"fields\":[{\"name\":\"Series_reference\",\"type\":\"string\"},{\"name\":\"Period\",\"type\":\"double\"},{\"name\":\"Data_value\",\"type\":[\"double\",\"null\"]},{\"name\":\"Suppressed\",\"type\":[\"string\",\"null\"]},{\"name\":\"STATUS\",\"type\":\"string\"},{\"name\":\"UNITS\",\"type\":\"string\"},{\"name\":\"Magnitude\",\"type\":\"int\"},{\"name\":\"Subject\",\"type\":\"string\"},{\"name\":\"Group\",\"type\":\"string\"},{\"name\":\"Series_title_1\",\"type\":\"string\"},{\"name\":\"Series_title_2\",\"type\":\"string\"},{\"name\":\"Series_title_3\",\"type\":[\"string\",\"null\"]},{\"name\":\"Series_title_4\",\"type\":[\"string\",\"null\"]},{\"name\":\"Series_title_5\",\"type\":[\"string\",\"null\"]}]}"
+                    }
+                },
+                "outputSchema": "{\"type\":\"record\",\"name\":\"etlSchemaBody\",\"fields\":[{\"name\":\"Series_reference\",\"type\":\"string\"},{\"name\":\"Period\",\"type\":\"double\"},{\"name\":\"Data_value\",\"type\":[\"double\",\"null\"]},{\"name\":\"Suppressed\",\"type\":[\"string\",\"null\"]},{\"name\":\"STATUS\",\"type\":\"string\"},{\"name\":\"UNITS\",\"type\":\"string\"},{\"name\":\"Magnitude\",\"type\":\"int\"},{\"name\":\"Subject\",\"type\":\"string\"},{\"name\":\"Group\",\"type\":\"string\"},{\"name\":\"Series_title_1\",\"type\":\"string\"},{\"name\":\"Series_title_2\",\"type\":\"string\"},{\"name\":\"Series_title_3\",\"type\":[\"string\",\"null\"]},{\"name\":\"Series_title_4\",\"type\":[\"string\",\"null\"]},{\"name\":\"Series_title_5\",\"type\":[\"string\",\"null\"]}]}",
+                "inputSchema": [
+                    {
+                        "name": "GCS",
+                        "schema": "{\"type\":\"record\",\"name\":\"etlSchemaBody\",\"fields\":[{\"name\":\"Series_reference\",\"type\":\"string\"},{\"name\":\"Period\",\"type\":\"double\"},{\"name\":\"Data_value\",\"type\":[\"double\",\"null\"]},{\"name\":\"Suppressed\",\"type\":[\"string\",\"null\"]},{\"name\":\"STATUS\",\"type\":\"string\"},{\"name\":\"UNITS\",\"type\":\"string\"},{\"name\":\"Magnitude\",\"type\":\"int\"},{\"name\":\"Subject\",\"type\":\"string\"},{\"name\":\"Group\",\"type\":\"string\"},{\"name\":\"Series_title_1\",\"type\":\"string\"},{\"name\":\"Series_title_2\",\"type\":\"string\"},{\"name\":\"Series_title_3\",\"type\":[\"string\",\"null\"]},{\"name\":\"Series_title_4\",\"type\":[\"string\",\"null\"]},{\"name\":\"Series_title_5\",\"type\":[\"string\",\"null\"]}]}"
+                    }
+                ],
+                "id": "BigQuery",
+                "type": "batchsink",
+                "label": "BigQuery",
+                "icon": "fa-plug",
+                "$$hashKey": "object:39",
+                "isPluginAvailable": true,
+                "_uiPosition": {
+                    "left": "1010px",
+                    "top": "365.5px"
+                }
+            }
+        ],
+        "connections": [
+            {
+                "from": "GCS",
+                "to": "BigQuery"
+            }
+        ],
+        "comments": [],
+        "resources": {
+            "memoryMB": 2048,
+            "virtualCores": 1
+        },
+        "driverResources": {
+            "memoryMB": 2048,
+            "virtualCores": 1
+        },
+        "postActions": [],
+        "properties": {},
+        "processTimingEnabled": true,
+        "stageLoggingEnabled": false,
+        "description": "Data Pipeline Application",
+        "engine": "spark",
+        "schedule": "0 1 */1 * *",
+        "maxConcurrentRuns": 1,
+        "transformationPushdown": {
+            "plugin": {
+                "name": "BigQueryPushdownEngine",
+                "label": "BigQueryPushdown",
+                "type": "sqlengine",
+                "artifact": {
+                    "name": "google-cloud",
+                    "version": "0.20.3",
+                    "scope": "SYSTEM"
+                },
+                "properties": {
+                    "useConnection": "false",
+                    "project": "auto-detect",
+                    "serviceAccountType": "filePath",
+                    "serviceFilePath": "auto-detect",
+                    "location": "US",
+                    "retainTables": "false",
+                    "tempTableTTLHours": "72",
+                    "jobPriority": "batch",
+                    "useStorageReadAPI": "false"
+                }
+            }
+        }
+    }
+}
