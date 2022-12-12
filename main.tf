@@ -1,13 +1,19 @@
 
-resource "random_uuid" "uuid" {
+resource "random_string" "uuid1" {
+  length = 4
+  special = false 
+  upper = false
 }
 
-resource "random_uuid" "uuid2" {
+resource "random_string" "uuid2" {
+  length = 4
+  special = false 
+  upper = false
 }
 
 ## Create GCS Bucket for Data files
 resource "google_storage_bucket" "gcs_bucket" {
-  name          = "rkc-data-fusion-poc-${random_uuid.uuid.result}"
+  name          = "rkc-data-fusion-poc-${random_string.uuid1.result}"
   location      = "US"
   force_destroy = true
 
@@ -25,7 +31,7 @@ resource "google_storage_bucket" "gcs_bucket" {
 ## Copy data files to GCS
 resource "google_storage_bucket_object" "sample-data" {
   name   = "electronic-card-transactions-october-2022-csv-tables.csv"
-  source = "/home/rkchatti/Data_Fusion/Data/electronic-card-transactions-october-2022-csv-tables.csv"
+  source = "/home/rkchatti/dataFusion/Data/electronic-card-transactions-october-2022-csv-tables.csv"
   bucket = "${google_storage_bucket.gcs_bucket.name}"
 
   depends_on = [google_storage_bucket.gcs_bucket]
@@ -73,7 +79,7 @@ resource "google_bigquery_dataset" "dataset_2" {
 
 ## Create SA for Data Fusion to use with Dataproc 
 resource "google_service_account" "data-fusion-sa" {
-  account_id   = "data-fusion-sa-${random_uuid.uuid2.result}"
+  account_id   = "data-fusion-sa-${random_string.uuid2.result}"
   display_name = "A service account that Jane can use"
 }
 
@@ -192,7 +198,7 @@ resource "cdap_namespace" "namespace0" {
 ## Deploy a Data Fusion pipeline
 resource "cdap_application" "pipeline0" {
     name = "gcs_to_bq"
-    spec = file("/home/rkchatti/Data_Fusion/Pipelines/GCS_To_BQ-cdap-data-pipeline.json")
+    spec = file("/home/rkchatti/dataFusion/Pipelines/GCS_To_BQ-cdap-data-pipeline.json")
     depends_on = [google_data_fusion_instance.data_fusion_instance]
 }
 
@@ -200,7 +206,7 @@ resource "cdap_application" "pipeline0" {
 ## Deploy a Data Fusion pipeline, to a targeted namespace 
 resource "cdap_application" "pipeline1" {
     name = "gcs_to_bq"
-    spec = file("/home/rkchatti/Data_Fusion/Pipelines/GCS_To_BQ-cdap-data-pipeline.json")
+    spec = file("/home/rkchatti/dataFusion/Pipelines/GCS_To_BQ-cdap-data-pipeline.json")
     namespace = "Demo_Namespace"
     depends_on = [google_data_fusion_instance.data_fusion_instance]
 }
@@ -209,7 +215,7 @@ resource "cdap_application" "pipeline1" {
 ## Deploy a Data Fusion pipeline, to a targeted namespace 
 resource "cdap_application" "pipeline2" {
     name = "gcs_to_bq_2"
-    spec = file("/home/rkchatti/Data_Fusion/Pipelines/GCS_To_BQ-cdap-data-pipeline.json")
+    spec = file("/home/rkchatti/dataFusion/Pipelines/GCS_To_BQ-cdap-data-pipeline.json")
     namespace = "Demo_Namespace"
     depends_on = [google_data_fusion_instance.data_fusion_instance]
 }

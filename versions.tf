@@ -14,14 +14,14 @@ terraform {
 }
 
 provider "google" {
-  credentials = file("./sturdy-dogfish-369718-c3c49490ccca.json")
-  project = "sturdy-dogfish-369718"
+  credentials = file("./credentials/charismatic-tea-371420-47df5ed2e73b.json")
+  project = var.project_id
 }
 
 data "google_client_config" "current" {}
 
 provider "cdap" {
-  host = "${google_data_fusion_instance.create_data_fusion_instance.service_endpoint}/api/"
+  host = "${google_data_fusion_instance.data_fusion_instance.service_endpoint}/api/"
   token = data.google_client_config.current.access_token
 }
 
