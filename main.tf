@@ -1,8 +1,13 @@
 
+resource "random_uuid" "uuid" {
+}
+
+resource "random_uuid" "uuid2" {
+}
 
 ## Create GCS Bucket for Data files
-resource "google_storage_bucket" "auto-expire" {
-  name          = "rkc-data-fusion-poc-9der"
+resource "google_storage_bucket" "gcs_bucket" {
+  name          = "rkc-data-fusion-poc-${random_uuid.uuid.result}"
   location      = "US"
   force_destroy = true
 
@@ -21,9 +26,9 @@ resource "google_storage_bucket" "auto-expire" {
 resource "google_storage_bucket_object" "sample-data" {
   name   = "electronic-card-transactions-october-2022-csv-tables.csv"
   source = "/home/rkchatti/Data_Fusion/Data/electronic-card-transactions-october-2022-csv-tables.csv"
-  bucket = "rkc-data-fusion-poc-9der"
+  bucket = "${google_storage_bucket.gcs_bucket.name}"
 
-  depends_on = [google_storage_bucket.auto-expire]
+  depends_on = [google_storage_bucket.gcs_bucket]
 }
 
 
@@ -68,7 +73,7 @@ resource "google_bigquery_dataset" "dataset_2" {
 
 ## Create SA for Data Fusion to use with Dataproc 
 resource "google_service_account" "data-fusion-sa" {
-  account_id   = "data-fusion-sa-9dfe"
+  account_id   = "data-fusion-sa-${random_uuid.uuid2.result}"
   display_name = "A service account that Jane can use"
 }
 
@@ -146,7 +151,7 @@ resource "google_dataproc_cluster" "data-fusion-dataproc-cluster" {
 }
 
 ## Create Data Fusion Instance
-resource "google_data_fusion_instance" "create_data_fusion_instance" {
+resource "google_data_fusion_instance" "data_fusion_instance" {
   name = var.instance_name
   description = var.description
   region = var.region
@@ -188,7 +193,7 @@ resource "cdap_namespace" "namespace0" {
 resource "cdap_application" "pipeline0" {
     name = "gcs_to_bq"
     spec = file("/home/rkchatti/Data_Fusion/Pipelines/GCS_To_BQ-cdap-data-pipeline.json")
-    depends_on = [google_data_fusion_instance.create_data_fusion_instance]
+    depends_on = [google_data_fusion_instance.data_fusion_instance]
 }
 
 
@@ -197,7 +202,7 @@ resource "cdap_application" "pipeline1" {
     name = "gcs_to_bq"
     spec = file("/home/rkchatti/Data_Fusion/Pipelines/GCS_To_BQ-cdap-data-pipeline.json")
     namespace = "Demo_Namespace"
-    depends_on = [google_data_fusion_instance.create_data_fusion_instance]
+    depends_on = [google_data_fusion_instance.data_fusion_instance]
 }
 
 
@@ -206,6 +211,6 @@ resource "cdap_application" "pipeline2" {
     name = "gcs_to_bq_2"
     spec = file("/home/rkchatti/Data_Fusion/Pipelines/GCS_To_BQ-cdap-data-pipeline.json")
     namespace = "Demo_Namespace"
-    depends_on = [google_data_fusion_instance.create_data_fusion_instance]
+    depends_on = [google_data_fusion_instance.data_fusion_instance]
 }
 

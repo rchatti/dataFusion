@@ -1,6 +1,6 @@
 instance_name = "rkc-cdf-demo"
 cdf_version = "DEVELOPER"
-cdf_release = "6.7.2"
+cdf_release = "6.5.1"
 cdf_network = "default"
 cdf_ip_range = "172.28.76.0/22"
 description = "Enterprise CDF deployed by Terraform"
