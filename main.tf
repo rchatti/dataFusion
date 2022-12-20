@@ -38,7 +38,7 @@ resource "google_storage_bucket_object" "sample-data" {
 }
 
 
-## Create BQ Dataset
+# Create BQ Dataset
 resource "google_bigquery_dataset" "dataset_1" {
   dataset_id                  = "data_fusion_out"
   friendly_name               = "rkcfirstdataset"
@@ -61,44 +61,53 @@ resource "google_bigquery_dataset" "dataset_1" {
 #   }
 }
 
-resource "google_bigquery_dataset" "dataset_2" {
-  dataset_id                  = "data_fusion_temp"
-  friendly_name               = "rkcfirstdataset"
-  description                 = "This is a test description"
-  location                    = "US"
-  default_table_expiration_ms = 3600000
+# resource "google_bigquery_dataset" "dataset_2" {
+#   dataset_id                  = "data_fusion_temp"
+#   friendly_name               = "rkcfirstdataset"
+#   description                 = "This is a test description"
+#   location                    = "US"
+#   default_table_expiration_ms = 3600000
 
-  labels = {
-    env = "default"
-  }
+#   labels = {
+#     env = "default"
+#   }
 
 
-}
+# }
 
-## Create Table with Schema
+# ## Create Table with Schema
 
 ## Create SA for Data Fusion to use with Dataproc 
-resource "google_service_account" "data-fusion-sa" {
+resource "google_service_account" "data_fusion_sa" {
   account_id   = "data-fusion-sa-${random_string.uuid2.result}"
-  display_name = "A service account that Jane can use"
+  display_name = "A service account that Data Fusion jobs will use to read data from GCS and write to BQ"
 }
 
-# resource "google_service_account_iam_member" "admin-account-iam-1" {
-#   service_account_id = google_service_account.data-fusion-sa.name
-#   role               = "roles/iam.serviceAccountUser"
-#   member             = "serviceAccount:${google_service_account.data-fusion-sa.email}"
-# }
+resource "google_storage_bucket_iam_member" "fusion_sa_storage_object_iam_1" {
+  bucket = "${google_storage_bucket.gcs_bucket.name}"
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.data_fusion_sa.email}"
+}
 
-# resource "google_service_account_iam_member" "admin-account-iam-2" {
-#   service_account_id = google_service_account.data-fusion-sa.name
-#   role               = "roles/dataproc.worker"
-#   member             = "serviceAccount:${google_service_account.data-fusion-sa.email}"
-# }
+resource "google_bigquery_dataset_iam_member" "fusion_sa_bq_iam_1" {
+  dataset_id = google_bigquery_dataset.dataset_1.dataset_id
+  role       = "roles/bigquery.dataEditor"
+  member     = "serviceAccount:${google_service_account.data_fusion_sa.email}"
+}
+
+resource "google_project_iam_binding" "dataproc_worker" {
+  project = var.project_id
+  role    = "roles/dataproc.worker"
+  members = [
+    "serviceAccount:${google_service_account.data_fusion_sa.email}",
+  ]
+}
+
 
 
 ## Setup a static Dataproc cluster
-resource "google_dataproc_cluster" "data-fusion-dataproc-cluster" {
-  name     = "data-fusion-dataproc-cluster"
+resource "google_dataproc_cluster" "dfusion-static" {
+  name     = "dfusion-static"
   region   = "us-central1"
   graceful_decommission_timeout = "120s"
   labels = {
@@ -139,14 +148,16 @@ resource "google_dataproc_cluster" "data-fusion-dataproc-cluster" {
       }
     }
 
-    # gce_cluster_config {
-    #   tags = ["foo", "bar"]
-    #   # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
-    #   service_account = google_service_account.data-fusion-sa.email
-    #   service_account_scopes = [
-    #     "cloud-platform"
-    #   ]
-    # }
+    gce_cluster_config {
+      tags = ["foo", "bar"]
+      # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
+      service_account = google_service_account.data_fusion_sa.email
+      service_account_scopes = [
+        "cloud-platform"
+      ]
+
+    internal_ip_only = false
+    }
 
     # # You can define multiple initialization_action blocks
     # initialization_action {
@@ -173,13 +184,14 @@ resource "google_data_fusion_instance" "data_fusion_instance" {
     ip_allocation = var.cdf_ip_range
   }
   version = var.cdf_release
-  dataproc_service_account = "${google_service_account.data-fusion-sa.email}"
+  dataproc_service_account = "${google_service_account.data_fusion_sa.email}"
 }
 
 ## Create a Data Fusion profile
 resource "cdap_profile" "profile" {
-    name  = "static-dataproc"
-    label = "static-dataproc"
+    name  = "static-dataproc-1"
+    label = "static-dataproc-1"
+    namespace = "Demo_Namespace"
     profile_provisioner {
         name = "gcp-dataproc"
         properties {
@@ -187,13 +199,50 @@ resource "cdap_profile" "profile" {
             value       = var.project_id
             is_editable = false
         }
+        properties {
+            name        = "clusterName"
+            value       = "${google_dataproc_cluster.dfusion-static.name}"
+            is_editable  = true
+        }
+        properties {
+            name            = "region"
+            value           = "us-central1"
+            is_editable      = true
+        }
     }
 }
 
-## Create a new namespace
-resource "cdap_namespace" "namespace0" {
-    name = "Demo_Namespace"
+## Create a Data Fusion profile
+resource "cdap_profile" "profile2" {
+    name  = "static-dataproc-2"
+    label = "static-dataproc-2"
+    namespace = "Demo_Namespace"
+    profile_provisioner {
+        name = "gcp-dataproc"
+        properties {
+            name        = var.project_id
+            value       = var.project_id
+            is_editable = false
+        }
+        properties {
+            name        = "clusterName"
+            value       = "cluster-e019"
+            is_editable  = true
+        }
+        properties {
+                name            = "region"
+                value           = "us-central1"
+                is_editable      = true
+        }
+    }
 }
+
+
+# ## Create a new namespace
+# resource "cdap_namespace" "namespace0" {
+#     name = "Demo_Namespace"
+# }
+
 
 ## Deploy a Data Fusion pipeline
 resource "cdap_application" "pipeline0" {
@@ -205,7 +254,7 @@ resource "cdap_application" "pipeline0" {
 
 ## Deploy a Data Fusion pipeline, to a targeted namespace 
 resource "cdap_application" "pipeline1" {
-    name = "gcs_to_bq"
+    name = "gcs_to_bq_copy"
     spec = file("/home/rkchatti/dataFusion/Pipelines/GCS_To_BQ-cdap-data-pipeline.json")
     namespace = "Demo_Namespace"
     depends_on = [google_data_fusion_instance.data_fusion_instance]
@@ -214,9 +263,8 @@ resource "cdap_application" "pipeline1" {
 
 ## Deploy a Data Fusion pipeline, to a targeted namespace 
 resource "cdap_application" "pipeline2" {
-    name = "gcs_to_bq_2"
+    name = "gcs_to_bq_copy_2"
     spec = file("/home/rkchatti/dataFusion/Pipelines/GCS_To_BQ-cdap-data-pipeline.json")
     namespace = "Demo_Namespace"
     depends_on = [google_data_fusion_instance.data_fusion_instance]
 }
-
