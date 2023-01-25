@@ -103,6 +103,16 @@ resource "google_project_iam_binding" "dataproc_worker" {
   ]
 }
 
+## Create Service Account for Cloud Functions to use on Data Fusion
+resource "google_service_account" "function_sa" {
+  account_id   = "cloud-function-sa-${random_string.uuid2.result}"
+  display_name = "A service account that Cloud Function will use to to trigger Data Fusion jobs"
+}
+
+resource "google_data_fusion_instance_iam_member" "function_fusion_admin_sa_iam_1" {
+  role   = "roles/datafusion.admin"
+  member = "serviceAccount:${google_service_account.function_sa.email}"
+}
 
 
 ## Setup a static Dataproc cluster
