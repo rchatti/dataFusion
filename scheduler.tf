@@ -3,6 +3,7 @@ resource "google_cloud_scheduler_job" "df_schedule" {
   name        = "df_schedule"
   description = "df_schedule"
   schedule    = "*/2 * * * *"
+  region = var.region
 
   pubsub_target {
     # topic.id is the topic's full resource name.

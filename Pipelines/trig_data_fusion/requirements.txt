@@ -1,1 +1,1 @@
-import requests
+requests==2.9.1
