@@ -8,7 +8,6 @@ resource "google_cloudfunctions_function" "data_fusion_function" {
   runtime     = "python39"
 
   available_memory_mb   = 128
-  event_trigger          = true
   entry_point           = "py_entry"
 
   source_archive_bucket = google_storage_bucket.storage_cfunctions.name

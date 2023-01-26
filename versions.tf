@@ -14,7 +14,7 @@ terraform {
 }
 
 provider "google" {
-  credentials = file("./credentials/charismatic-tea-371420-47df5ed2e73b.json")
+  credentials = file("./credentials/cogent-cocoa-372212-465ab7c21c28.json")
   project = var.project_id
 }
 

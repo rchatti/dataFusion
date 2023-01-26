@@ -3,6 +3,11 @@ variable "project_id" {
   type        = string
 }
 
+variable "gcs_cfunctions_suffix" {
+  description = "GCS Bucket suffix to use with Cloud Function source code"
+  type        = string
+}
+
 variable "instance_name" {
   description = "The instance name."
   type        = string

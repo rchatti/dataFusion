@@ -1,7 +1,7 @@
 # Storage bucket for storing Cloud Function's source code
 resource "google_storage_bucket" "storage_cfunctions" {
-  project     = var.project
-  name        = "${var.project}-${var.gcs_cfunctions_suffix}"
+  project     = var.project_id
+  name        = "${var.project_id}-${var.gcs_cfunctions_suffix}"
   location    = var.region
 
   # delete bucket and contents on destroy.
